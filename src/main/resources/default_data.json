@@ -1,0 +1,12 @@
+{
+  "categories": [
+    { "id": "cat_sqli", "name": "SQL注入", "expanded": true, "subCategories": [] },
+    { "id": "cat_xss", "name": "XSS", "expanded": true, "subCategories": [] },
+    { "id": "cat_ssrf", "name": "SSRF", "expanded": true, "subCategories": [] },
+    { "id": "cat_auth", "name": "越权/未授权", "expanded": true, "subCategories": [] },
+    { "id": "cat_upload", "name": "文件上传", "expanded": true, "subCategories": [] },
+    { "id": "cat_rce", "name": "命令执行", "expanded": true, "subCategories": [] },
+    { "id": "cat_xxe", "name": "XXE", "expanded": true, "subCategories": [] },
+    { "id": "cat_csrf", "name": "CSRF", "expanded": true, "subCategories": [] }
+  ]
+}
