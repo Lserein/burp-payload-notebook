@@ -2,6 +2,8 @@
 
 面向个人渗透测试的 BurpSuite Payload 笔记管理插件，支持自定义二级分类、实时搜索、一键复制。
 
+![image-20260505214610536](C:\Users\24767\AppData\Roaming\Typora\typora-user-images\image-20260505214610536.png)
+
 ## 功能概览
 
 | 功能 | 说明 |
@@ -12,6 +14,8 @@
 | 一键复制 | 选中条目后一键复制 Payload 到剪贴板，Toast 提示反馈 |
 | 数据持久化 | 自动保存为 JSON 文件，重启 Burp 数据不丢失 |
 | 内置分类 | 预置 SQL注入、XSS、SSRF、越权/未授权、文件上传、命令执行、XXE、CSRF 八大类 |
+| 自定义数据文件 | 支持选择任意 .json 文件作为数据源，记住上次路径，可随时切回默认 |
+| 大字体预览 | Payload 预览/编辑区使用 18px 等宽字体，长 Payload 更易阅读 |
 
 ## 安装
 
@@ -41,15 +45,15 @@ mvn clean package
 ### 界面布局
 
 ```
-┌────────────┬──────────────────────────────────┐
-│            │  [搜索框]  [+一级] [+二级] [添加] [删除] [复制] [编辑] │
-│  分类树     │──────────────────────────────────│
-│            │  条目列表                          │
-│  一级分类   │                                  │
-│   ├ 二级   │──────────────────────────────────│
-│   └ 二级   │  Payload 预览/编辑区               │
-│            │  一级分类 > 二级分类                 │
-└────────────┴──────────────────────────────────┘
+┌────────────┬──────────────────────────────────────────────────────┐
+│            │  [搜索框] [+一级] [+二级] [添加] [删除] [复制] [编辑] [选择文件] [默认路径] │
+│  分类树     │──────────────────────────────────────────────────────│
+│            │  条目列表                                            │
+│  一级分类   │                                                    │
+│   ├ 二级   │──────────────────────────────────────────────────────│
+│   └ 二级   │  Payload 预览/编辑区 (18px 等宽字体)                  │
+│            │  一级分类 > 二级分类                                   │
+└────────────┴──────────────────────────────────────────────────────┘
 ```
 
 ### 分类操作
@@ -58,6 +62,12 @@ mvn clean package
 - **新增二级分类**：先选中一个一级分类，点击 `+二级分类` 按钮，输入名称确认
 - **删除分类**：选中要删除的分类（一级或二级），点击 `删除` 按钮，二次确认后删除
 - **重命名分类**：双击分类名称即可编辑（待实现）
+
+### 文件路径管理
+
+- **选择文件**：点击 `选择文件` 按钮，弹出文件选择对话框，选择一个 `.json` 文件作为数据源，插件会读取该文件内容并替换当前数据，路径自动记住（下次启动优先加载）
+- **默认路径**：点击 `默认路径` 按钮，切回插件默认的数据文件（`payload-notebook-data/payload_notebook.json`）
+- 插件启动时，若上次使用了自定义文件且该文件仍存在，自动加载自定义文件
 
 ### 条目操作
 
@@ -81,36 +91,34 @@ mvn clean package
 
 ## 数据存储
 
-- 数据文件：`payload_notebook.json`，存储在插件 JAR 同级目录的 `payload-notebook-data/` 下
+- 默认数据文件：`payload_notebook.json`，存储在插件 JAR 同级目录的 `payload-notebook-data/` 下
+- 自定义数据文件：通过 `选择文件` 按钮可加载任意 `.json` 文件，路径记录在 `notebook_prefs.properties` 中
 - 格式：JSON，可手动备份或迁移
-- 容错：若数据文件损坏，自动加载内置默认分类（8 个一级分类，无条目）
+- 容错：若数据文件损坏或不存在，自动加载内置默认分类（8 个一级分类，无条目）
 
-## 技术栈
+**JSON 数据结构示例**：
 
-- [Burp Montoya API](https://portswigger.github.io/burp-extensions-montoya-api/) 2025.5
-- Java Swing（原生组件，无第三方 UI 库）
-- [Gson](https://github.com/google/gson) 2.11.0（JSON 序列化）
-- Maven + maven-shade-plugin（构建打包）
-
-## 项目结构
-
-```
-src/main/java/com/payloadnotebook/
-├── BurpPayloadNotebook.java        # 插件入口
-├── model/
-│   ├── Category.java               # 一级分类模型
-│   ├── SubCategory.java            # 二级分类模型
-│   ├── Entry.java                  # 条目模型
-│   └── NotebookData.java           # 根数据模型
-├── service/
-│   ├── DataService.java            # 数据 CRUD、搜索、持久化
-│   └── ClipboardService.java       # 剪贴板操作
-├── ui/
-│   ├── MainPanel.java              # 主面板（交互逻辑）
-│   ├── CategoryTreePanel.java      # 左侧分类树
-│   ├── EntryListPanel.java         # 条目列表
-│   ├── PayloadEditorPanel.java     # Payload 预览/编辑区
-│   └── ToolbarPanel.java           # 搜索框 + 操作按钮
-└── util/
-    └── DialogUtil.java             # 对话框工具
+```json
+{
+  "categories": [
+    {
+      "id": "cat_sqli",
+      "name": "SQL注入",
+      "expanded": true,
+      "subCategories": [
+        {
+          "id": "sub_mysql",
+          "name": "MySQL注入",
+          "entries": [
+            {
+              "id": "entry_1",
+              "title": "联合查询-判断列数",
+              "payload": "' ORDER BY 1-- -"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 ```

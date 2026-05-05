@@ -19,13 +19,42 @@ public class DataService {
     private NotebookData data;
     private File dataFile;
 
+    private final File defaultDataFile;
+
     public DataService(File extensionDir) {
-        this.dataFile = new File(extensionDir, DATA_FILE);
+        this.defaultDataFile = new File(extensionDir, DATA_FILE);
+        this.dataFile = defaultDataFile;
         loadData();
     }
 
     public NotebookData getData() {
         return data;
+    }
+
+    public File getDataFile() {
+        return dataFile;
+    }
+
+    public File getDefaultDataFile() {
+        return defaultDataFile;
+    }
+
+    /**
+     * Switch the active data file to a custom path and reload.
+     */
+    public boolean loadFromFile(File file) {
+        if (file == null || !file.exists()) return false;
+        this.dataFile = file;
+        loadData();
+        return true;
+    }
+
+    /**
+     * Switch back to the default data file and reload.
+     */
+    public void loadDefault() {
+        this.dataFile = defaultDataFile;
+        loadData();
     }
 
     // --- Lifecycle ---

@@ -12,17 +12,25 @@ import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.List;
+import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class MainPanel extends JPanel {
+
+    private static final String PREFS_FILE = "notebook_prefs.properties";
+    private static final String KEY_CUSTOM_PATH = "custom.json.path";
 
     private final DataService dataService;
     private final CategoryTreePanel categoryTreePanel;
     private final EntryListPanel entryListPanel;
     private final PayloadEditorPanel payloadEditorPanel;
     private final ToolbarPanel toolbarPanel;
+    private final File prefsFile;
 
     // Current selection state
     private String selectedCategoryId;
@@ -30,7 +38,14 @@ public class MainPanel extends JPanel {
 
     public MainPanel(DataService dataService) {
         this.dataService = dataService;
+        this.prefsFile = new File(dataService.getDefaultDataFile().getParent(), PREFS_FILE);
         setLayout(new BorderLayout());
+
+        // Restore last used custom JSON path if exists
+        String savedPath = loadCustomPath();
+        if (savedPath != null && new File(savedPath).exists()) {
+            dataService.loadFromFile(new File(savedPath));
+        }
 
         // Create panels
         categoryTreePanel = new CategoryTreePanel();
@@ -111,6 +126,12 @@ public class MainPanel extends JPanel {
 
         // Edit
         toolbarPanel.getBtnEdit().addActionListener(e -> handleEdit());
+
+        // Choose custom JSON file
+        toolbarPanel.getBtnChooseFile().addActionListener(e -> handleChooseFile());
+
+        // Switch back to default path
+        toolbarPanel.getBtnDefaultPath().addActionListener(e -> handleDefaultPath());
 
         // Entry selection
         entryListPanel.setOnEntrySelected(entry -> {
@@ -325,5 +346,76 @@ public class MainPanel extends JPanel {
                 toast.dispose();
             }
         }, 1000);
+    }
+
+    // --- Custom file path ---
+
+    private void handleChooseFile() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("选择 Payload JSON 文件");
+        chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("JSON 文件 (*.json)", "json"));
+        chooser.setSelectedFile(new File("payload_notebook.json"));
+        int result = chooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File file = chooser.getSelectedFile();
+            boolean ok = dataService.loadFromFile(file);
+            if (ok) {
+                saveCustomPath(file.getAbsolutePath());
+                refreshAll();
+                showToast("已加载: " + file.getName());
+            } else {
+                showToast("文件读取失败");
+            }
+        }
+    }
+
+    private void handleDefaultPath() {
+        dataService.loadDefault();
+        clearCustomPath();
+        refreshAll();
+        showToast("已切回默认路径");
+    }
+
+    private void refreshAll() {
+        selectedCategoryId = null;
+        selectedSubCategoryId = null;
+        categoryTreePanel.refreshTree(dataService.getData());
+        entryListPanel.refreshEntries(dataService.getAllEntries());
+        payloadEditorPanel.displayEntry(null, null);
+    }
+
+    private String loadCustomPath() {
+        if (!prefsFile.exists()) return null;
+        Properties props = new Properties();
+        try (Reader r = Files.newBufferedReader(prefsFile.toPath(), StandardCharsets.UTF_8)) {
+            props.load(r);
+            return props.getProperty(KEY_CUSTOM_PATH);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private void saveCustomPath(String path) {
+        Properties props = new Properties();
+        props.setProperty(KEY_CUSTOM_PATH, path);
+        try (Writer w = Files.newBufferedWriter(prefsFile.toPath(), StandardCharsets.UTF_8)) {
+            props.store(w, "Payload Notebook preferences");
+        } catch (Exception e) {
+            System.err.println("[Payload Notebook] Failed to save preferences: " + e.getMessage());
+        }
+    }
+
+    private void clearCustomPath() {
+        if (!prefsFile.exists()) return;
+        Properties props = new Properties();
+        try (Reader r = Files.newBufferedReader(prefsFile.toPath(), StandardCharsets.UTF_8)) {
+            props.load(r);
+        } catch (Exception ignored) {}
+        props.remove(KEY_CUSTOM_PATH);
+        try (Writer w = Files.newBufferedWriter(prefsFile.toPath(), StandardCharsets.UTF_8)) {
+            props.store(w, "Payload Notebook preferences");
+        } catch (Exception e) {
+            System.err.println("[Payload Notebook] Failed to save preferences: " + e.getMessage());
+        }
     }
 }

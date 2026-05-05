@@ -12,6 +12,8 @@ public class ToolbarPanel extends JPanel {
     private final JButton btnDelete;
     private final JButton btnCopy;
     private final JButton btnEdit;
+    private final JButton btnChooseFile;
+    private final JButton btnDefaultPath;
 
     public ToolbarPanel() {
         setLayout(new BorderLayout(5, 0));
@@ -27,9 +29,11 @@ public class ToolbarPanel extends JPanel {
         btnDelete = new JButton("删除");
         btnCopy = new JButton("复制");
         btnEdit = new JButton("编辑");
+        btnChooseFile = new JButton("选择文件");
+        btnDefaultPath = new JButton("默认路径");
 
         Font btnFont = btnAddCategory.getFont().deriveFont(11f);
-        for (JButton btn : new JButton[]{btnAddCategory, btnAddSubCategory, btnAddEntry, btnDelete, btnCopy, btnEdit}) {
+        for (JButton btn : new JButton[]{btnAddCategory, btnAddSubCategory, btnAddEntry, btnDelete, btnCopy, btnEdit, btnChooseFile, btnDefaultPath}) {
             btn.setFont(btnFont);
             buttonPanel.add(btn);
         }
@@ -45,4 +49,6 @@ public class ToolbarPanel extends JPanel {
     public JButton getBtnDelete() { return btnDelete; }
     public JButton getBtnCopy() { return btnCopy; }
     public JButton getBtnEdit() { return btnEdit; }
+    public JButton getBtnChooseFile() { return btnChooseFile; }
+    public JButton getBtnDefaultPath() { return btnDefaultPath; }
 }

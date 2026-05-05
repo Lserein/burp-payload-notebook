@@ -23,13 +23,13 @@ public class PayloadEditorPanel extends JPanel {
 
         payloadArea = new JTextArea();
         payloadArea.setEditable(false);
-        payloadArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        payloadArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 18));
         payloadArea.setLineWrap(true);
 
         JScrollPane scrollPane = new JScrollPane(payloadArea);
         // Add line numbers via row header
         JTextArea lineNumbers = new JTextArea("1");
-        lineNumbers.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        lineNumbers.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 18));
         lineNumbers.setBackground(new Color(240, 240, 240));
         lineNumbers.setEditable(false);
         lineNumbers.setLineWrap(false);
