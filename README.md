@@ -2,7 +2,7 @@
 
 面向个人渗透测试的 BurpSuite Payload 笔记管理插件，支持自定义二级分类、实时搜索、一键复制。
 
-![image-20260505214610536](C:\Users\24767\AppData\Roaming\Typora\typora-user-images\image-20260505214610536.png)
+![image-20260505214610536](image.png)
 
 ## 功能概览
 
