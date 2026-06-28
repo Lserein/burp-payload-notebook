@@ -2,7 +2,7 @@
 
 面向个人渗透测试的 BurpSuite Payload 笔记管理插件，支持自定义二级分类、实时搜索、一键复制。
 
-![image-20260505214610536](image.png)
+![image-20260505214610536](image.jpg)
 
 ## 功能概览
 
@@ -95,30 +95,3 @@ mvn clean package
 - 自定义数据文件：通过 `选择文件` 按钮可加载任意 `.json` 文件，路径记录在 `notebook_prefs.properties` 中
 - 格式：JSON，可手动备份或迁移
 - 容错：若数据文件损坏或不存在，自动加载内置默认分类（8 个一级分类，无条目）
-
-**JSON 数据结构示例**：
-
-```json
-{
-  "categories": [
-    {
-      "id": "cat_sqli",
-      "name": "SQL注入",
-      "expanded": true,
-      "subCategories": [
-        {
-          "id": "sub_mysql",
-          "name": "MySQL注入",
-          "entries": [
-            {
-              "id": "entry_1",
-              "title": "联合查询-判断列数",
-              "payload": "' ORDER BY 1-- -"
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}
-```
