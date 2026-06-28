@@ -13,16 +13,16 @@ public class BurpPayloadNotebook implements BurpExtension {
     public void initialize(MontoyaApi api) {
         api.extension().setName("Payload Notebook");
 
-        // Derive data directory from extension JAR location
-        String extensionPath = api.extension().filename();
-        File extensionFile = new File(extensionPath);
-        File extensionDir = new File(extensionFile.getParent(), "payload-notebook-data");
-        extensionDir.mkdirs();
+        // Use the project source directory as the default data directory
+        File projectDir = new File("C:/Users/24767/Desktop/AI-Project/BurpSuite Payload Notebook/burp-payload-notebook");
+        if (!projectDir.exists()) {
+            projectDir.mkdirs();
+        }
 
-        DataService dataService = new DataService(extensionDir);
+        DataService dataService = new DataService(projectDir);
         MainPanel mainPanel = new MainPanel(dataService);
 
         api.userInterface().registerSuiteTab("Payload Notebook", mainPanel);
-        api.logging().logToOutput("[Payload Notebook] Loaded successfully. Data dir: " + extensionDir.getAbsolutePath());
+        api.logging().logToOutput("[Payload Notebook] Loaded successfully. Data dir: " + projectDir.getAbsolutePath());
     }
 }
